@@ -6,13 +6,13 @@
     <title>$title$</title>
     <authors>$author$</authors>
     <owners>$author$</owners>
-    <licenseUrl>http://LICENSE_URL_HERE_OR_DELETE_THIS_LINE</licenseUrl>
-    <projectUrl>http://PROJECT_URL_HERE_OR_DELETE_THIS_LINE</projectUrl>
-    <iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>
+    <licenseUrl>https://github.com/Infodinamica/mvc-components/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/Infodinamica/mvc-components/</projectUrl>
+    <iconUrl>https://es.gravatar.com/userimage/101034715/cc029f93b4ab6e5c7e263d8db6b35b3a.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
-    <releaseNotes>Summary of changes made in this release of the package.</releaseNotes>
+    <releaseNotes>Versión BETA. Contiene una clase para encapsular la comunicación entre el controlador y el cliente. También contiene de un controlador BASE que contiene control de errores y mapeo de FormCollection a POCO</releaseNotes>
     <copyright>Copyright 2016</copyright>
-    <tags>Tag1 Tag2</tags>
+    <tags>.NET4 .NET 4 MVC MVC4 Utilities FormCollection POCO Auto Mapper</tags>
   </metadata>
 </package>
