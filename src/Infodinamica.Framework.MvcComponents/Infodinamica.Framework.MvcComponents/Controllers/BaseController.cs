@@ -148,5 +148,24 @@ namespace Infodinamica.Framework.MvcComponents.Controllers
             }
             return model;
         }
+
+        /// <summary>
+        /// Obtiene la IP del cliente conectado
+        /// </summary>
+        /// <returns>IP del cliente conectado</returns>
+        protected string GetClientAddress()
+        {
+            string clientAddress = string.Empty;
+            if (System.Web.HttpContext.Current.Request.ServerVariables["HTTP_X_FORWARDED_FOR"] != null)
+            {
+                clientAddress = System.Web.HttpContext.Current.Request.ServerVariables["HTTP_X_FORWARDED_FOR"].ToString();
+            }
+            else if (!string.IsNullOrWhiteSpace(System.Web.HttpContext.Current.Request.UserHostAddress) && System.Web.HttpContext.Current.Request.UserHostAddress.Length != 0)
+            {
+                clientAddress = System.Web.HttpContext.Current.Request.UserHostAddress;
+            }
+            return clientAddress;
+        }
+
     }
 }
