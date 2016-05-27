@@ -61,6 +61,24 @@ namespace Infodinamica.Framework.MvcComponents.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a No se puede crear la respuesta en JSON dado que el contexto del controlador es nulo.
+        /// </summary>
+        public static string CurrentContextIsNull {
+            get {
+                return ResourceManager.GetString("CurrentContextIsNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a La llamada JSON no permite la operación GET.
+        /// </summary>
+        public static string GetIsNotAllowed {
+            get {
+                return ResourceManager.GetString("GetIsNotAllowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Se ha producido un error en el bind del formulario. Revise la propiedad ModelErrors de la excepción interna.
         /// </summary>
         public static string InvalidBind {

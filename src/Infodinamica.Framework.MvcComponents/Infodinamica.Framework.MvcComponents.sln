@@ -5,8 +5,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infodinamica.Framework.MvcC
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infodinamica.Framework.MvcComponents.Resources", "Infodinamica.Framework.MvcComponents.Resources\Infodinamica.Framework.MvcComponents.Resources.csproj", "{23BCB773-D6EA-4DFD-8319-F0ACD3FBDA20}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infodinamica.Framework.Test", "Infodinamica.Framework.Test\Infodinamica.Framework.Test.csproj", "{4687DC3E-1458-4426-B596-88E699CE6B67}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,10 +19,6 @@ Global
 		{23BCB773-D6EA-4DFD-8319-F0ACD3FBDA20}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{23BCB773-D6EA-4DFD-8319-F0ACD3FBDA20}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{23BCB773-D6EA-4DFD-8319-F0ACD3FBDA20}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4687DC3E-1458-4426-B596-88E699CE6B67}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4687DC3E-1458-4426-B596-88E699CE6B67}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4687DC3E-1458-4426-B596-88E699CE6B67}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4687DC3E-1458-4426-B596-88E699CE6B67}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

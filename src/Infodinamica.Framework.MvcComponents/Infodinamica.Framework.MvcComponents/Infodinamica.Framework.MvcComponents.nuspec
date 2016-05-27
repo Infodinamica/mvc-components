@@ -11,7 +11,7 @@
     <iconUrl>https://es.gravatar.com/userimage/101034715/cc029f93b4ab6e5c7e263d8db6b35b3a.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
-    <releaseNotes>Versión BETA. Contiene una clase para encapsular la comunicación entre el controlador y el cliente. También contiene de un controlador BASE que contiene control de errores y mapeo de FormCollection a POCO</releaseNotes>
+    <releaseNotes>Se mejora la documentación. Se agregan métodos para entregar vistas parciales como JSON. Se utiliza Newtonsoft.Json para la creación de JSON. Se incluye una clase plana para representar opciones dentro de DropDownList</releaseNotes>
     <copyright>Copyright 2016</copyright>
     <tags>.NET4 .NET 4 MVC MVC4 Utilities FormCollection POCO Auto Mapper</tags>
   </metadata>

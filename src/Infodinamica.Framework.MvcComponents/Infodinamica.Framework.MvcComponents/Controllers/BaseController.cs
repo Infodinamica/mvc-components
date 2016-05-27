@@ -2,11 +2,15 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Web.Mvc;
+using Infodinamica.Framework.Core.Exceptions;
 using Infodinamica.Framework.Core.Extensions.IO;
 using Infodinamica.Framework.Core.Extensions.Reflection;
 using Infodinamica.Framework.MvcComponents.Resources;
+using Infodinamica.Framework.MvcComponents.Tools;
 
 namespace Infodinamica.Framework.MvcComponents.Controllers
 {
@@ -16,10 +20,10 @@ namespace Infodinamica.Framework.MvcComponents.Controllers
     public abstract class BaseController : Controller
     {
         /// <summary>
-        /// Asigna los errores a la vista
+        /// Asigna los errores a la vista. Solo sirve cuando existe un postback de la página
         /// </summary>
         /// <param name="errors">Diccionario con el nombre del campo y el error que contiene.</param>
-        protected void BindErrors(IDictionary<string, string> errors)
+        protected void BindErrorsOnPostback(IDictionary<string, string> errors)
         {
             if (errors != null)
             {
@@ -34,27 +38,27 @@ namespace Infodinamica.Framework.MvcComponents.Controllers
         }
 
         /// <summary>
-        /// Controla una excepción y la agrega a la vista
+        /// Controla una excepción y la agrega a la vista. Solo sirve cuando existe un postback de la página
         /// </summary>
         /// <param name="ex">Error a ser controlada</param>
-        protected virtual void ExceptionHandler(Exception ex)
+        protected virtual void ExceptionHandlerOnPostback(Exception ex)
         {
             IDictionary<string, string> businessErrorCollection = new Dictionary<string, string>();
             businessErrorCollection.Add(new KeyValuePair<string, string>(string.Empty, ex.Message));
-            this.BindErrors(businessErrorCollection);
+            this.BindErrorsOnPostback(businessErrorCollection);
 
             if (ControllerContext.HttpContext.Request != null && ControllerContext.HttpContext.Request.Form != null)
             {
                 var currentFormCollection = new FormCollection(ControllerContext.HttpContext.Request.Form);
-                BindForm(currentFormCollection);    
+                BindFormOnPostback(currentFormCollection);    
             }
         }
 
         /// <summary>
-        /// Asigna un formulario al formulario de una vista
+        /// Asigna un formulario al formulario de una vista. Solo sirve cuando existe un postback de la página
         /// </summary>
         /// <param name="formCollection">Vector con los datos del formulario</param>
-        protected void BindForm(FormCollection formCollection)
+        protected void BindFormOnPostback(FormCollection formCollection)
         {
             foreach (var key in formCollection.AllKeys)
             {
@@ -75,7 +79,7 @@ namespace Infodinamica.Framework.MvcComponents.Controllers
             if (formCollection != null)
             {
                 isFormCollection = true;
-                this.BindForm(formCollection);
+                this.BindFormOnPostback(formCollection);
             }
             Type modelType = typeof(T);
             T model = Activator.CreateInstance<T>();
@@ -150,6 +154,46 @@ namespace Infodinamica.Framework.MvcComponents.Controllers
         }
 
         /// <summary>
+        /// Convierte un dictionary en un dropdown generico
+        /// </summary>
+        /// <param name="data">Diccionario a retornar a la interfaz</param>
+        /// <returns></returns>
+        protected IList<PlainOption> CreateDropDownList(IDictionary<string, string> data)
+        {
+            var dataList = new List<PlainOption>();
+            foreach (var item in data)
+            {
+                dataList.Add(new PlainOption()
+                {
+                    Value = item.Key,
+                    Text = item.Value,
+                    IsSelected = false
+                });
+            }
+            return dataList;
+        }
+
+        /// <summary>
+        /// Convierte un dictionary en un dropdown generico
+        /// </summary>
+        /// <param name="data">Diccionario a retornar a la interfaz</param>
+        /// <returns></returns>
+        protected IList<PlainOption> CreateDropDownList(IDictionary<int, string> data)
+        {
+            var dataList = new List<PlainOption>();
+            foreach (var item in data)
+            {
+                dataList.Add(new PlainOption()
+                {
+                    Value = item.Key.ToString(),
+                    Text = item.Value,
+                    IsSelected = false
+                });
+            }
+            return dataList;
+        }
+
+        /// <summary>
         /// Obtiene la IP del cliente conectado
         /// </summary>
         /// <returns>IP del cliente conectado</returns>
@@ -167,5 +211,277 @@ namespace Infodinamica.Framework.MvcComponents.Controllers
             return clientAddress;
         }
 
+        /// <summary>
+        /// Calcula el número de página solicitado
+        /// </summary>
+        /// <param name="formCollection">Colección de items solicitados</param>
+        /// <returns>Numero de página solicitado o nulo si no han solicitado ningúna página en particular</returns>
+        protected short? GetPageNumberRequested(FormCollection formCollection)
+        {
+            var formItem = formCollection["PageNumberRequested"];
+            short returnValue;
+            if (formItem == null)
+                return 1;
+
+            if (short.TryParse(formItem, out returnValue))
+                return returnValue;
+            else
+                return 1;
+        }
+
+        /// <summary>
+        /// Retorna un objeto JSON usando Newtonsoft.JSON
+        /// </summary>
+        /// <param name="data">Elemento a transformar</param>
+        /// <returns>Objeto JSON</returns>
+        protected JsonResult CustomJson(object data)
+        {
+            return new JsonNetResult
+            {
+                Data = data,
+                JsonRequestBehavior = JsonRequestBehavior.DenyGet
+            };
+        }
+
+        /// <summary>
+        /// Retorna un objeto JSON usando Newtonsoft.JSON
+        /// </summary>
+        /// <param name="data">Elemento a transformar</param>
+        /// <param name="behavior">Indica si se admiten llamadas GET</param>
+        /// <returns>Objeto JSON</returns>
+        protected JsonResult CustomJson(object data, JsonRequestBehavior behavior)
+        {
+            return new JsonNetResult
+            {
+                Data = data,
+                JsonRequestBehavior = behavior
+            };
+        }
+
+        /// <summary>
+        /// Retorna un objeto JSON usando Newtonsoft.JSON
+        /// </summary>
+        /// <param name="ex">Error a mostrar en la interfaz, el cual es presentado en formato JSON</param>
+        /// <returns>Objeto JSON</returns>
+        protected JsonResult CustomJson(Exception ex)
+        {
+            return new JsonNetResult
+            {
+                Error = ex,
+                JsonRequestBehavior = JsonRequestBehavior.DenyGet
+            };
+        }
+
+        /// <summary>
+        /// Retorna un objeto JSON usando Newtonsoft.JSON
+        /// </summary>
+        /// <param name="ex">Error a mostrar en la interfaz, el cual es presentado en formato JSON</param>
+        /// <param name="behavior">Indica si se admiten llamadas GET</param>
+        /// <returns>Objeto JSON</returns>
+        protected JsonResult CustomJson(Exception ex, JsonRequestBehavior behavior)
+        {
+            return new JsonNetResult
+            {
+                Error = ex,
+                JsonRequestBehavior = behavior
+            };
+        }
+
+        /// <summary>
+        /// Retorna un objeto JSON usando Newtonsoft.JSON
+        /// </summary>
+        /// <param name="data">Elemento a transformar</param>
+        /// <param name="ex">Error a mostrar en la interfaz, el cual es presentado en formato JSON</param>
+        /// <returns>Objeto JSON</returns>
+        protected JsonResult CustomJson(object data, Exception ex)
+        {
+            return new JsonNetResult
+            {
+                Data = data,
+                Error = ex,
+                JsonRequestBehavior = JsonRequestBehavior.DenyGet
+            };
+        }
+
+        /// <summary>
+        /// Retorna un objeto JSON usando Newtonsoft.JSON
+        /// </summary>
+        /// <param name="data">Elemento a transformar</param>
+        /// <param name="ex">Error a mostrar en la interfaz, el cual es presentado en formato JSON</param>
+        /// <param name="behavior">Indica si se admiten llamadas GET</param>
+        /// <returns>Objeto JSON</returns>
+        protected JsonResult CustomJson(object data, Exception ex, JsonRequestBehavior behavior)
+        {
+            return new JsonNetResult
+            {
+                Data = data,
+                Error = ex,
+                JsonRequestBehavior = behavior
+            };
+        }
+        
+        /// <summary>
+        /// Obtiene el HTML del partialview
+        /// </summary>
+        /// <returns>string con el HTML del partialview</returns>
+        protected string RenderPartialToString()
+        {
+            InvalidateControllerContext();
+            string partialViewName = this.ControllerContext.RouteData.Values["action"].ToString(); 
+            IView view = ViewEngines.Engines.FindPartialView(ControllerContext, partialViewName).View;
+            string result = RenderViewToString(view);
+            return result;
+        }
+
+        /// <summary>
+        /// Obtiene el HTML del partialview
+        /// </summary>
+        /// <param name="partialViewName">Nombre del partialview</param>
+        /// <returns>string con el HTML del partialview</returns>
+        protected string RenderPartialToString(string partialViewName)
+        {
+            InvalidateControllerContext();
+            IView view = ViewEngines.Engines.FindPartialView(ControllerContext, partialViewName).View;
+            string result = RenderViewToString(view);
+            return result;
+        }
+
+        /// <summary>
+        /// Obtiene el HTML del partialview
+        /// </summary>
+        /// <param name="model">Modelo para bindear la vista parcial</param>
+        /// <returns>string con el HTML del partialview</returns>
+        protected string RenderPartialToString(object model)
+        {
+            InvalidateControllerContext();
+            string partialViewName = this.ControllerContext.RouteData.Values["action"].ToString();    
+            IView view = ViewEngines.Engines.FindPartialView(ControllerContext, partialViewName).View;
+            string result = RenderViewToString(view, model);
+            return result;
+        }
+
+        /// <summary>
+        /// Obtiene el HTML del partialview
+        /// </summary>
+        /// <param name="partialViewName">Nombre del partialview</param>
+        /// <param name="model">Modelo para bindear la vista parcial</param>
+        /// <returns>string con el HTML del partialview</returns>
+        protected string RenderPartialToString(string partialViewName, object model)
+        {
+            InvalidateControllerContext();
+            IView view = ViewEngines.Engines.FindPartialView(ControllerContext, partialViewName).View;
+            string result = RenderViewToString(view, model);
+            return result;
+        }
+
+        /// <summary>
+        /// Obtiene el HTML del view
+        /// </summary>
+        /// <returns>string con el HTML del view</returns>
+        protected string RenderViewToString()
+        {
+            InvalidateControllerContext();
+            string viewName = this.ControllerContext.RouteData.Values["action"].ToString(); 
+            IView view = ViewEngines.Engines.FindView(ControllerContext, viewName, null).View;
+            string result = RenderViewToString(view);
+            return result;
+        }
+
+        /// <summary>
+        /// Obtiene el HTML del view
+        /// </summary>
+        /// <param name="viewName">Nombre del view</param>
+        /// <returns>string con el HTML del view</returns>
+        protected string RenderViewToString(string viewName)
+        {
+            InvalidateControllerContext();
+            IView view = ViewEngines.Engines.FindView(ControllerContext, viewName, null).View;
+            string result = RenderViewToString(view);
+            return result;
+        }
+
+        /// <summary>
+        /// Obtiene el HTML del view
+        /// </summary>
+        /// <param name="model">Modelo para bindear la vista</param>
+        /// <returns>string con el HTML del view</returns>
+        protected string RenderViewToString(object model)
+        {
+            InvalidateControllerContext();
+            string viewName = this.ControllerContext.RouteData.Values["action"].ToString();
+            IView view = ViewEngines.Engines.FindView(ControllerContext, viewName, null).View;
+            string result = RenderViewToString(view, model);
+            return result;
+        }
+
+        /// <summary>
+        /// Obtiene el HTML del view
+        /// </summary>
+        /// <param name="viewName">Nombre del view</param>
+        /// <param name="model">Modelo para bindear la vista</param>
+        /// <returns>string con el HTML del view</returns>
+        protected string RenderViewToString(string viewName, object model)
+        {
+            InvalidateControllerContext();
+            IView view = ViewEngines.Engines.FindView(ControllerContext, viewName, null).View;
+            string result = RenderViewToString(view, model);
+            return result;
+        }
+        
+        /// <summary>
+        /// Obtiene el HTML del view
+        /// </summary>
+        /// <param name="view">Interfaz de la vista</param>
+        /// <returns>string con el HTML del view</returns>
+        protected string RenderViewToString(IView view)
+        {
+            InvalidateControllerContext();
+            string result = null;
+            if (view != null)
+            {
+                StringBuilder sb = new StringBuilder();
+                using (StringWriter writer = new StringWriter(sb))
+                {
+                    ViewContext viewContext = new ViewContext(ControllerContext, view, new ViewDataDictionary(), new TempDataDictionary(), writer);
+                    view.Render(viewContext, writer);
+                    writer.Flush();
+                }
+                result = sb.ToString();
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Obtiene el HTML del view
+        /// </summary>
+        /// <param name="view">Interfaz de la vista</param>
+        /// <param name="model">Modelo para bindear la vista</param>
+        /// <returns>string con el HTML del view</returns>
+        protected string RenderViewToString(IView view, object model)
+        {
+            InvalidateControllerContext();
+            string result = null;
+            if (view != null)
+            {
+                StringBuilder sb = new StringBuilder();
+                using (StringWriter writer = new StringWriter(sb))
+                {
+                    ViewContext viewContext = new ViewContext(ControllerContext, view, new ViewDataDictionary(model), new TempDataDictionary(), writer);
+                    view.Render(viewContext, writer);
+                    writer.Flush();
+                }
+                result = sb.ToString();
+            }
+            return result;
+        }
+
+        private void InvalidateControllerContext()
+        {
+            if (ControllerContext == null)
+            {
+                ControllerContext context = new ControllerContext(System.Web.HttpContext.Current.Request.RequestContext, this);
+                ControllerContext = context;
+            }
+        }
     }
 }
