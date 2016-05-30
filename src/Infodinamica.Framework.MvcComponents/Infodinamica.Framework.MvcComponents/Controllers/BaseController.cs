@@ -53,6 +53,32 @@ namespace Infodinamica.Framework.MvcComponents.Controllers
                 BindFormOnPostback(currentFormCollection);    
             }
         }
+        
+        /// <summary>
+        /// Limpia los names del formCollection. Util cuando la vista ha sido bindeada a través de un Tuple
+        /// </summary>
+        /// <param name="formCollection">FormCollectiona limpiar</param>
+        /// <param name="keyToClean">Caracter a buscar que separa el Name con el agregado en la vista</param>
+        /// <returns></returns>
+        protected FormCollection CleanKeys(FormCollection formCollection, string keyToClean)
+        {
+            var newFormCollection = new FormCollection();
+
+            foreach (string key in formCollection)
+            {
+                var value = formCollection[key];
+                var pos = key.IndexOf(keyToClean);
+                var newKey = string.Empty;
+                if (pos >= 0)
+                    newKey = key.Substring(pos + 1);
+                else
+                    newKey = key;
+
+                newFormCollection.Add(newKey, value);
+            }
+
+            return newFormCollection;
+        }
 
         /// <summary>
         /// Asigna un formulario al formulario de una vista. Solo sirve cuando existe un postback de la página
@@ -66,7 +92,7 @@ namespace Infodinamica.Framework.MvcComponents.Controllers
                 base.ModelState.SetModelValue(key, value);
             }
         }
-
+        
         /// <summary>
         /// Realiza el bind del FormCollection a un tipo de dato fuertemente tipeado (POCO)
         /// </summary>
@@ -80,11 +106,12 @@ namespace Infodinamica.Framework.MvcComponents.Controllers
             {
                 isFormCollection = true;
                 this.BindFormOnPostback(formCollection);
+                formCollection = this.CleanKeys(formCollection, ".");
             }
             Type modelType = typeof(T);
             T model = Activator.CreateInstance<T>();
             var propertyInfos = modelType.GetProperties();
-            
+
             for (int i = 0; i < propertyInfos.Length; i++)
             {
                 var propertyInfo = propertyInfos[i];
@@ -100,7 +127,7 @@ namespace Infodinamica.Framework.MvcComponents.Controllers
                             object val = valueProvider.RawValue.CastToType(propertyInfo.PropertyType);
                             if (val != null)
                                 propertyInfo.SetValue(model, val, null);
-                            
+
                         }
                         else if (!string.IsNullOrEmpty(base.Request[propertyInfo.Name]))
                         {
@@ -108,7 +135,7 @@ namespace Infodinamica.Framework.MvcComponents.Controllers
                             object val = base.Request[propertyInfo.Name].CastToType(propertyInfo.PropertyType);
                             if (val != null)
                                 propertyInfo.SetValue(model, val, null);
-                            
+
                         }
                         else if (base.Request.Files[propertyInfo.Name] != null)
                         {
@@ -116,7 +143,7 @@ namespace Infodinamica.Framework.MvcComponents.Controllers
                             object val = base.Request.Files[propertyInfo.Name].InputStream.CastToByteArray();
                             if (val != null)
                                 propertyInfo.SetValue(model, val, null);
-                            
+
                         }
                         else if (base.ValueProvider.GetValue(propertyInfo.Name) != null)
                         {
@@ -125,7 +152,7 @@ namespace Infodinamica.Framework.MvcComponents.Controllers
                             object val = valueProvider2.RawValue.CastToType(propertyInfo.PropertyType);
                             if (val != null)
                                 propertyInfo.SetValue(model, val, null);
-                            
+
                         }
                     }
                     catch (Exception)
@@ -141,7 +168,8 @@ namespace Infodinamica.Framework.MvcComponents.Controllers
                             DescriptionAttribute[] arrDescAtt = (DescriptionAttribute[])propertyInfo.GetCustomAttributes(typeof(DescriptionAttribute), false);
                             displayFieldName = ((arrDescAtt.Length > 0) ? arrDescAtt.First<DescriptionAttribute>().Description : propertyInfo.Name);
                         }
-                        base.ModelState.AddModelError(propertyInfo.Name, string.Format(ErrorMessages.InvalidValue, rawValue, displayFieldName));
+                        //base.ModelState.AddModelError(propertyInfo.Name, string.Format(ErrorMessages.InvalidValue, rawValue, displayFieldName));
+                        base.ModelState.AddModelError(propertyInfo.Name, string.Format("Valor inválido", rawValue, displayFieldName));
                     }
                 }
             }
@@ -152,22 +180,22 @@ namespace Infodinamica.Framework.MvcComponents.Controllers
             }
             return model;
         }
-
+        
         /// <summary>
         /// Convierte un dictionary en un dropdown generico
         /// </summary>
         /// <param name="data">Diccionario a retornar a la interfaz</param>
         /// <returns></returns>
-        protected IList<PlainOption> CreateDropDownList(IDictionary<string, string> data)
+        protected IList<SelectListItem> CreateDropDownList(IDictionary<int, string> data)
         {
-            var dataList = new List<PlainOption>();
-            foreach (var item in data)
+            var dataList = new List<SelectListItem>();
+            foreach (KeyValuePair<int, string> item in data)
             {
-                dataList.Add(new PlainOption()
+                dataList.Add(new SelectListItem()
                 {
-                    Value = item.Key,
+                    Selected = false,
                     Text = item.Value,
-                    IsSelected = false
+                    Value = item.Key.ToString()
                 });
             }
             return dataList;
@@ -178,21 +206,21 @@ namespace Infodinamica.Framework.MvcComponents.Controllers
         /// </summary>
         /// <param name="data">Diccionario a retornar a la interfaz</param>
         /// <returns></returns>
-        protected IList<PlainOption> CreateDropDownList(IDictionary<int, string> data)
+        protected IList<SelectListItem> CreateDropDownList(IDictionary<string, string> data)
         {
-            var dataList = new List<PlainOption>();
-            foreach (var item in data)
+            var dataList = new List<SelectListItem>();
+            foreach (KeyValuePair<string, string> item in data)
             {
-                dataList.Add(new PlainOption()
+                dataList.Add(new SelectListItem()
                 {
-                    Value = item.Key.ToString(),
+                    Selected = false,
                     Text = item.Value,
-                    IsSelected = false
+                    Value = item.Key
                 });
             }
             return dataList;
         }
-
+        
         /// <summary>
         /// Obtiene la IP del cliente conectado
         /// </summary>
