@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -87,12 +88,12 @@ namespace Infodinamica.Framework.MvcComponents.Tools
                 var customEx = (CustomException) ex;
                 if (customEx.HaveDataErrors)
                 {
-                    foreach (KeyValuePair<string, string> entry in ex.Data)
+                    foreach (DictionaryEntry entry in ex.Data)
                     {
                         errorsMessages.Add(new PlainItem()
                         {
-                            Text = entry.Value,
-                            Value = entry.Key
+                            Text = entry.Value.ToString(),
+                            Value = entry.Key.ToString()
                         });
                     }
                     return errorsMessages;

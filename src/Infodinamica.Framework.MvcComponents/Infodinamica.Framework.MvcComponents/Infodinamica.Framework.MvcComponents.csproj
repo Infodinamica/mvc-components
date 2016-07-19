@@ -31,8 +31,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Infodinamica.Framework.Core, Version=3.2.0.30019, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Infodinamica.Framework.Core.3.2.0.29908\lib\net40\Infodinamica.Framework.Core.dll</HintPath>
+    <Reference Include="Infodinamica.Framework.Core, Version=3.3.0.22544, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Infodinamica.Framework.Core.3.3.0.22544\lib\net40\Infodinamica.Framework.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -46,6 +46,7 @@
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Web" />
     <Reference Include="System.Web.Helpers, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.WebPages.2.0.20710.0\lib\net40\System.Web.Helpers.dll</HintPath>

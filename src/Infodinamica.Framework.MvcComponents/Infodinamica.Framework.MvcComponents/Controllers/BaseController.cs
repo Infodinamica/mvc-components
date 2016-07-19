@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Web.Mvc;
 using Infodinamica.Framework.Core.Exceptions;
@@ -45,6 +47,23 @@ namespace Infodinamica.Framework.MvcComponents.Controllers
         {
             IDictionary<string, string> businessErrorCollection = new Dictionary<string, string>();
             businessErrorCollection.Add(new KeyValuePair<string, string>(string.Empty, ex.Message));
+
+            //Por cada detalle en el diccionario, se agrega a la colección de errores
+            foreach (DictionaryEntry entry in ex.Data)
+            {
+                var current = businessErrorCollection.FirstOrDefault(x => x.Key == entry.Key.ToString());
+                
+                //Se agrega en caso que no exista o se modifica en caso que si exista
+                if (current.Equals(default(KeyValuePair<string, string>)))
+                    businessErrorCollection.Add(new KeyValuePair<string, string>(entry.Key.ToString(),
+                        entry.Value.ToString()));
+                else
+                {
+                    var newMessage = current.Value + Environment.NewLine + entry.Value.ToString();
+                    businessErrorCollection.Remove(current.Key);
+                    businessErrorCollection.Add(new KeyValuePair<string, string>(entry.Key.ToString(), newMessage));
+                }
+            }
             this.BindErrorsOnPostback(businessErrorCollection);
 
             if (ControllerContext.HttpContext.Request != null && ControllerContext.HttpContext.Request.Form != null)
@@ -501,6 +520,22 @@ namespace Infodinamica.Framework.MvcComponents.Controllers
                 result = sb.ToString();
             }
             return result;
+        }
+
+        /// <summary>
+        /// Transforma un string que representa un JSON en un objeto fuertemente tipado
+        /// </summary>
+        /// <typeparam name="T">Tipo de dato a retornar</typeparam>
+        /// <param name="json">string que representa al objeto en formato JSON</param>
+        /// <seealso cref="http://haacked.com/archive/2010/04/15/sending-json-to-an-asp-net-mvc-action-method-argument.aspx/"/>
+        /// <returns>Objeto fuertemente tipado del tipo T</returns>
+        protected T BindToModelFromJson<T>(string json)
+        {
+            using (var ms = new MemoryStream(Encoding.Unicode.GetBytes(json)))
+            {
+                var serialiser = new DataContractJsonSerializer(typeof(T));
+                return (T)serialiser.ReadObject(ms);
+            }
         }
 
         private void InvalidateControllerContext()
